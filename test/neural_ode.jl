@@ -60,15 +60,15 @@ scatter!(pl,t,cur_pred[1,:],label="prediction")
 #b1=randn(50)
 #b2=randn(2)
 #los([w1,b1,w2,b2])
-#old_loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
+old_loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
 #los(destructure(dudt))
 
-data = Iterators.repeated((), 5)
+data = Iterators.repeated((), 50)
 opt = ADAM(0.1)
 
 # Callback function to observe training.
 cb = function ()
-  println("los_fct() is ", los_fct())
+  println("los_fct() is ", old_loss_n_ode())
   cur_pred = Flux.data(predict_n_ode())
   println("cur_pred is ", cur_pred)
 end
@@ -77,4 +77,4 @@ end
 cb()
 
 # Start training process.
-Flux.train!(los_fct, ps, data, opt, cb = cb)
+Flux.train!(old_loss_n_ode, ps, data, opt, cb = cb)
