@@ -49,18 +49,23 @@ cb2 = function ()
     println("\"",Tracker.data(L2_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
 end
 #training call
-opt2 = ADAM(0.1)
-data2 = Iterators.repeated((), 200)
-@time Flux.train!(L2_loss_fct, ps, data2, opt2, cb = cb2)
-
+number_sets, number_epochs_loss1, number_epochs_loss2 = 40, 20, 20
+for i in 1:number_sets
+    data1 = Iterators.repeated((), number_epochs_loss1)
+    data2 = Iterators.repeated((), number_epochs_loss2)
+    opt1 = ADAM(0.1)
+    opt2 = ADAM(0.1)
+    Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
+    Flux.train!(L2_loss_fct, ps, data2, opt2, cb = cb2)
+end
 
 
 
 # Call n_ode to get first prediction and to show startpoint for training.
 pred = n_ode(u0)
 scatter(t, ode_data[1,:], label="data")
-scatter!(t, Flux.data(pred[1,:]), label="prediction")
-scatter!(t, ode_data[2,:], label="data")
-scatter!(t, Flux.data(pred[2,:]), label="prediction")
+    scatter!(t, Flux.data(pred[1,:]), label="prediction")
+    scatter!(t, ode_data[2,:], label="data")
+    scatter!(t, Flux.data(pred[2,:]), label="prediction")
 
 #savefig("sogood.png")

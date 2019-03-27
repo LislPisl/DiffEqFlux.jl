@@ -34,35 +34,14 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct()=loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-#data1 = Iterators.repeated((), 100)
-#opt1 = ADAM(0.1)
+data1 = Iterators.repeated((), 20)
+opt1 = ADAM(0.1)
 # Callback function to observe two stage training.
 cb1 = function ()
     println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
 end
 #two stage training call
-#@time Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
-#L2 loss
-L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
-# Callback function to observe L2 training.
-cb2 = function ()
-    println("\"",Tracker.data(L2_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
-end
-#training call
-#opt2 = ADAM(0.1)
-#data2 = Iterators.repeated((), 200)
-#@time Flux.train!(L2_loss_fct, ps, data2, opt2, cb = cb2)
-number_sets, number_epochs_loss1, number_epochs_loss2 = 40, 20, 20
-for i in 1:number_sets
-    data1 = Iterators.repeated((), number_epochs_loss1)
-    data2 = Iterators.repeated((), number_epochs_loss2)
-    opt1 = ADAM(0.1)
-    opt2 = ADAM(0.1)
-    Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
-    Flux.train!(L2_loss_fct, ps, data2, opt2, cb = cb2)
-end
-
-
+Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
 
 # Call n_ode to get first prediction and to show startpoint for training.
 pred = n_ode(u0)
