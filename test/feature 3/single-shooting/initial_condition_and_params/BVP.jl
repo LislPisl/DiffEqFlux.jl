@@ -36,7 +36,7 @@ boundary_positions = [5,10,15,20,25,30]
 tes=y[boundary_positions]
 known_pos = noisy_data[:,boundary_positions]
 scatter!(tes, known_pos[1,:], label="d's")
-#to guess: u0
+#to guess: u0 and params
 ##### now define get new try_u0 in a smart way #####
 # structure:
 #   sample try_u0
@@ -54,22 +54,12 @@ function get_solve(try_i, b_positions)
     try_end_i = try_solve_i[:,b_positions]
     return try_end_i
 end
-function get_r(try_x, known_x)
-    print(try_x, known_x)
-    r = try_x .- known_x
-    return r
-end
 function get_loss(r)
     return sum(abs2,r)
 end
 init_u0 =known_pos[:,3]
 get_loss(get_r(get_solve(init_u0, boundary_positions), known_pos))
-### now minimize this using a) bisection or b) newton type ###
-function get_new_u0(d,)
-    r =
-    return try_x
-end
-
+### now minimize this using optim ###
 optim_fuction(xx) = get_loss(get_r(get_solve(xx, boundary_positions), known_pos))
 result = Optim.optimize(optim_fuction,  init_u0)
 

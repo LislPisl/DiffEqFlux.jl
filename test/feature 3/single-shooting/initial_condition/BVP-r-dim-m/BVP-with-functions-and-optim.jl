@@ -64,12 +64,7 @@ function get_loss(r)
 end
 init_u0 =known_pos[:,3]
 get_loss(get_r(get_solve(init_u0, boundary_positions), known_pos))
-### now minimize this using a) bisection or b) newton type ###
-function get_new_u0(d,)
-    r =
-    return try_x
-end
-
+### now minimize this using optim ###
 optim_fuction(xx) = get_loss(get_r(get_solve(xx, boundary_positions), known_pos))
 result = Optim.optimize(optim_fuction,  init_u0)
 
