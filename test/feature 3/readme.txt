@@ -5,4 +5,4 @@ F. Hamilton,
 SIAM Undergraduate Research Online, 2011.
 
 
-difference is: i observe not only one species but all. (they say only x)
+difference is: I observe not only one species but all. (they say only x)

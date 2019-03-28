@@ -43,17 +43,15 @@ scatter!(tes, known_pos[1,:], label="d's")
 #   simulate ODE
 #   calculate r
 # prob pitfall they start at 0!!!!!
-
 # d: length is m+1. This are the x coordinates of our noisy data
 # p: vector of unknown params
 # r: risidual vector. It is m+1 long.
 # c: initial value vector
 #  in their example c,p length 3 as three species and three params
-
 function get_solve(try_i, b_positions)
     prob_i = ODEProblem(trueODEfunc, try_i, tspan)
     try_solve_i = Array(solve(prob_i, Tsit5(), saveat=t))
-    try_end_i = try_solve_i[:,end]
+    try_end_i = try_solve_i[:,b_positions]
     return try_end_i
 end
 function get_r(try_x, known_x)
@@ -64,8 +62,8 @@ end
 function get_loss(r)
     return sum(abs2,r)
 end
-init_u0 =known_end
-get_loss(get_r(get_solve(init_u0), known_end))
+init_u0 =known_pos[:,3]
+get_loss(get_r(get_solve(init_u0, boundary_positions), known_pos))
 ### now minimize this using a) bisection or b) newton type ###
 function get_new_u0(d,)
     r =
