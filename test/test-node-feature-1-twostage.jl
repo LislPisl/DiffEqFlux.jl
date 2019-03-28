@@ -5,7 +5,7 @@ u0 = Float32[2.; 0.]
 # Number of evaluations of the neural ODE. It relates to the numbers of layers of the neural net (depth of network).
 datasize = 30
 # Time span in which of evaluation will be and actual timepoints of evaluations
-tspan = (0.0f0, 3.f0)
+tspan = (0.0f0, 1.5f0)
 t = range(tspan[1], tspan[2], length = datasize)
 # The true ODE (with the true parameters) which the neural net should learn
 function trueODEfunc(du, u, p, t)
@@ -34,7 +34,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct()=loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-data1 = Iterators.repeated((), 20)
+data1 = Iterators.repeated((), 1000)
 opt1 = ADAM(0.1)
 # Callback function to observe two stage training.
 cb1 = function ()
