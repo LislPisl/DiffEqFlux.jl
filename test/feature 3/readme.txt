@@ -11,4 +11,4 @@ I am doing this:
 
 1. single shooting, init, one residual point                -done
 2. single shooting, init, multiple residual point           -done
-3. single shooting, init + params, multiple residual point  -in progress
+3. single shooting, init + params, multiple residual point  -done   now: save at is resiudual points!
