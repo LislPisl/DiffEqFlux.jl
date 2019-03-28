@@ -1,5 +1,5 @@
 I am trying to implement multiple shooting for solving odes more robust.
-I follow this reference:
+I follow ideas of:
 F. Hamilton,
 “Parameter estimation in differential equations: A numerical study of shooting methods,”
 SIAM Undergraduate Research Online, 2011.
@@ -11,4 +11,5 @@ I am doing this:
 
 1. single shooting, init, one residual point                -done
 2. single shooting, init, multiple residual point           -done
-3. single shooting, init + params, multiple residual point  -done   now: save at is resiudual points!
+3. single shooting, init + params, multiple residual point  -done   now: save at is residual points!
+4. either: multiple shooting only params or other optims?
