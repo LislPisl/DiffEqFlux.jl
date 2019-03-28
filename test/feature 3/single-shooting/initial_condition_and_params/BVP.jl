@@ -36,18 +36,6 @@ boundary_positions = [5,10,15,20,25,30]
 tes=y[boundary_positions]
 known_pos = noisy_data[:,boundary_positions]
 scatter!(tes, known_pos[1,:], label="d's")
-#to guess: u0 and params
-##### now define get new try_u0 in a smart way #####
-# structure:
-#   sample try_u0
-#   simulate ODE
-#   calculate r
-# prob pitfall they start at 0!!!!!
-# d: length is m+1. This are the x coordinates of our noisy data
-# p: vector of unknown params
-# r: risidual vector. It is m+1 long.
-# c: initial value vector
-#  in their example c,p length 3 as three species and three params
 function get_solve(try_i, b_positions)
     prob_i = ODEProblem(trueODEfunc, try_i, tspan)
     try_solve_i = Array(solve(prob_i, Tsit5(), saveat=t))
