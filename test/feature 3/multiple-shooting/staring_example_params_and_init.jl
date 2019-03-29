@@ -1,10 +1,9 @@
 using OrdinaryDiffEq, Plots, Optim, Distributions
-u0 = Float32[2.; 0.]
+u0 = Float32[1.9 ;1.5]
 datasize = 30           # resiudual number! = d's
 tspan = (0.0f0, 3.f0)
 t = range(tspan[1], tspan[2], length = datasize)
-true_A = [-0.1 2.0; -2.0 -0.1]
-[3.5 0.;-0.1 1.0; -0.6 0.01]
+true_A = [0.05 1.0; -0.5 0.01]
 
 function param_ODEfunc(guess_A)
     function guess_ODEfunc(du, u, p, t)
@@ -15,9 +14,9 @@ end
 trueODEfunc = param_ODEfunc(true_A)
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
-scatter(t, ode_data[1,:], label="data")
+plot(t, ode_data[1,:], label="data")
 
-
+#other noise distr types?
 function add_noise(in_data, noise_sigma)
     out_data = Array{Float64}(undef, size(in_data)[1], size(in_data)[2])
     if (noise_sigma>0)
@@ -43,8 +42,8 @@ function L2_loss_fct(params)
     return sum(abs2,noisy_data .- make_ode(params))
 end
 
-start_params_one = [3.5 0.;-0.1 1.0; -0.6 0.01]
-start_params_two = [1.5 1.5;-0.2 1.0; -0.6 0.01]
+start_params_one = [1.9 1.5;0.02 1.0; -0.5 0.01]
+start_params_two = [1.9 1.5;0.04 1.0; -0.5 0.01]
 result_one = Optim.optimize(L2_loss_fct, start_params_one )
 result_two = Optim.optimize(L2_loss_fct, start_params_two )
 
@@ -53,7 +52,6 @@ solution_one = make_ode(result_one.minimizer)
 solution_two = make_ode(result_two.minimizer)
 
 solstart_one = make_ode(start_params_one)
-
 solstart_two = make_ode(start_params_two)
 species = 1
 plot(t, ode_data[species,:], label="real sol")
@@ -63,9 +61,10 @@ plot!(t, solstart_two[species,:], label="begin 2 data")
 plot!(t, solution_one[species,:], label="sol 1 data")
 plot!(t, solution_two[species,:], label="sol 2 data")
 
-savefig("good.png")
+
+savefig("/Users/eroesch/Documents/phd/brave_new_world/DiffEqFlux.jl/test/feature 3/multiple-shooting/example.pdf")y
 
 #1.5 1.1 does not work --> fist species too far down --> crash. up is ok.
 
 
-make_ode([1.5 1.5; 0.1 1.0; 0.6 0.01])
+make_ode([2.875 1.5; 0.02 1.0; -0.5 0.02])
