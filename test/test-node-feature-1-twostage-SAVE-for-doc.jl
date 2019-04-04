@@ -1,3 +1,4 @@
+# This file created the plots in the overleaf file. I only changedline 38, n_epochs.
 using Flux, DiffEqFlux, OrdinaryDiffEq, DiffEqParamEstim, Plots, Optim, Dates
 ####################################################### Observation ###############################################################
 # Start conditions for the two species in the system
@@ -34,7 +35,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct()=loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 3000
+n_epochs = 5000 # vary between [500, 1000, 2500, 5000]
 data1 = Iterators.repeated((), n_epochs)
 opt1 = ADAM(0.1)
 # Callback function to observe two stage training.
@@ -60,19 +61,21 @@ sa = saver(n_epochs)
 cb1 = function ()
     sa.count_epochs = sa.count_epochs +  1
     update_saver(sa, Tracker.data(two_stage_loss_fct()),Dates.Time(Dates.now()))
-    println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
+    #println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
 end
 #two stage training call
-@time Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
+a = @time Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
 # Call n_ode to get first prediction and to show startpoint for training.
+
 pred = n_ode(u0)
-sum(abs2,ode_data .- pred)
+print(sum(abs2,ode_data .- pred))
+
 scatter(t, ode_data[1,:], label="data")
 scatter!(t, Flux.data(pred[1,:]), label="prediction")
 scatter!(t, ode_data[2,:], label="data")
 scatter!(t, Flux.data(pred[2,:]), label="prediction")
 
-#savefig("500.pdf")
+#savefig("sogood.png")
 #print("hi")
 #create outside references and enclose them if that's what you need
 

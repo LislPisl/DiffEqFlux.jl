@@ -5,7 +5,7 @@ u0 = Float32[2.; 0.]
 # Number of evaluations of the neural ODE. It relates to the numbers of layers of the neural net (depth of network).
 datasize = 30
 # Time span in which of evaluation will be and actual timepoints of evaluations
-tspan = (0.0f0, 3.f0)
+tspan = (0.0f0, 1.5f0)
 t = range(tspan[1], tspan[2], length = datasize)
 # The true ODE (with the true parameters) which the neural net should learn
 function trueODEfunc(du, u, p, t)
@@ -32,7 +32,7 @@ cb = function ()
 end
 #training call
 opt = ADAM(0.1)
-data = Iterators.repeated((), 20)
+data = Iterators.repeated((), 2)
 @time Flux.train!(L2_loss_fct, ps, data, opt, cb = cb)
 
 

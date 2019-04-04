@@ -219,7 +219,7 @@ end
 
 loss_values = map(x->parse(Float64,x),a[:,1])
 time_values = map(x->parse_dates(x),a[:,2])
-norm_time_vals = norm_time(time_values)
+#norm_time_vals = norm_time(time_values)
 
 
 print(time_values[200]-time_values[1])
@@ -233,6 +233,6 @@ plot!(time_values[121:140],loss_values[121:140],linecolor="blue")
 plot!(time_values[141:160],loss_values[141:160],linecolor="red")
 plot!(time_values[161:180],loss_values[161:180],linecolor="blue")
 plot!(time_values[181:200],loss_values[181:200],linecolor="red")
-Int64(norm_time_vals[1])
+#Int64(norm_time_vals[1])
 
 print(loss_values[200])
