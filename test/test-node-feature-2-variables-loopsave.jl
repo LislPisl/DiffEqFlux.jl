@@ -43,13 +43,13 @@ dudt = Chain(x -> x.^3,
        Dense(50,2))
 # Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)
 ps = Flux.params(dudt)
-# Build node
+#build node
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-# To set by user
-init_train, number_sets, number_reps, number_epochs_loss1, number_epochs_loss2 = 3000, 8, 1, 60, 20
-# For saving
-sa = saver(init_train+number_sets*(number_reps*(number_epochs_loss1+number_epochs_loss2)+init_train))
-# Define collocation loss function with callback
+# to set by user
+init_train, number_sets, number_epochs_loss1, number_epochs_loss2 = 8000, 15, 1000, 20
+# for saving
+sa = saver(init_train+number_sets*(number_epochs_loss1+number_epochs_loss2))
+# define collocation loss function with callback
 function node_two_stage_function(model, x, tspan, saveat, ode_data,
             args...; kwargs...)
   dudt_(du,u,p,t) = du .= model(u)
@@ -57,40 +57,30 @@ function node_two_stage_function(model, x, tspan, saveat, ode_data,
   two_stage_method(prob_fly, saveat, ode_data)
 end
 loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), reltol=1e-7, abstol=1e-9)
-collocation_loss_fct()=loss_n_ode.cost_function(ps)
-cb_collocation = function ()
+two_stage_loss_fct()=loss_n_ode.cost_function(ps)
+cb1 = function ()
     sa.count_epochs = sa.count_epochs +  1
-    update_saver(sa, Tracker.data(collocation_loss_fct()),Dates.Time(Dates.now()))
-    #println("\"",Tracker.data(collocation_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
+    update_saver(sa, Tracker.data(two_stage_loss_fct()),Dates.Time(Dates.now()))
+    #println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
 end
-# Define L2 loss function with callback
-l2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
-cb_l2 = function ()
+#define L2 loss function with callback
+L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
+cb2 = function ()
     sa.count_epochs = sa.count_epochs +  1
-    update_saver(sa, Tracker.data(l2_loss_fct()),Dates.Time(Dates.now()))
-    #println("\"",Tracker.data(l2_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
+    update_saver(sa, Tracker.data(L2_loss_fct()),Dates.Time(Dates.now()))
+    #println("\"",Tracker.data(L2_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
 end
-# Training
-data_iter_init_collocation = Iterators.repeated((), init_train)
-data_iter_rep_collocation = Iterators.repeated((), number_epochs_loss1)
-data_iter_rep_l2 = Iterators.repeated((), number_epochs_loss2)
-opt = ADAM(0.1)
-opt_l2 = ADAM(0.1)
-
-# init train
-Flux.train!(collocation_loss_fct, ps, data_iter_init_collocation, opt, cb = cb_collocation)
-for j in 1:number_sets
-    # Push in new area
-    for i in 1:number_reps
-        Flux.train!(l2_loss_fct, ps, data_iter_rep_l2, opt_l2, cb = cb_l2)
-        print("sa.count_epochs ", sa.count_epochs)
-        print("\n")
-        Flux.train!(collocation_loss_fct, ps, data_iter_rep_collocation, opt, cb = cb_collocation)
-    end
-    # Find local minimum
-    Flux.train!(collocation_loss_fct, ps, data_iter_init_collocation, opt, cb = cb_collocation)
+#training call
+data0 = Iterators.repeated((), init_train)
+data1 = Iterators.repeated((), number_epochs_loss1)
+data2 = Iterators.repeated((), number_epochs_loss2)
+opt1 = ADAM(0.1)
+opt2 = ADAM(0.1)
+Flux.train!(two_stage_loss_fct, ps, data0, opt1, cb = cb1)
+@time for i in 1:number_sets
+    Flux.train!(L2_loss_fct, ps, data2, opt2, cb = cb2)
+    Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
 end
-
 # Call n_ode to get first prediction and to show startpoint for training.
 pred = n_ode(u0)
 scatter(t, ode_data[1,:], label="data")
@@ -99,6 +89,7 @@ scatter(t, ode_data[1,:], label="data")
     scatter!(t, Flux.data(pred[2,:]), label="prediction")
 
 #savefig("sogood.png")
+
+
 using BSON: @save
-name = string(init_train)*"_"*string(number_sets)*"_"*string(number_reps)*"_"*string(number_epochs_loss1)*"_"*string(number_epochs_loss2)
-#@save "DiffEqFlux.jl/test/results/mix/model_mix_"*name*"_epochs.bson" dudt
+@save "DiffEqFlux.jl/test/results/mix/model_mix_8000_15_200_20_epochs.bson" dudt

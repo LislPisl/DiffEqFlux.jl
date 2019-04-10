@@ -25,14 +25,38 @@ ps = Flux.params(dudt)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
 #L2 loss
+n_epochs = 1
+mutable struct saver
+    losses::Array{Float64,1}
+    times::Array{Dates.Time,1}
+    count_epochs::Int128
+end
+function saver(n_epochs)
+    losses = zeros(n_epochs)
+    times = fill(Dates.Time(Dates.now()),n_epochs)
+    count_epochs = 0
+    return saver(losses,times,count_epochs)
+end
+function update_saver(saver, loss_i, time_i)
+    epoch_i = saver.count_epochs
+    saver.losses[epoch_i] = loss_i
+    saver.times[epoch_i] = time_i
+end
+
+sa_l2 = saver(n_epochs)
+
 L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
 # Callback function to observe L2 training.
 cb = function ()
+    sa_l2.count_epochs = sa_l2.count_epochs +  1
+
+    update_saver(sa_l2, Tracker.data(L2_loss_fct()),Dates.Time(Dates.now()))
+
     println("\"",Tracker.data(L2_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
 end
 #training call
 opt = ADAM(0.1)
-data = Iterators.repeated((), 2)
+data = Iterators.repeated((), n_epochs)
 @time Flux.train!(L2_loss_fct, ps, data, opt, cb = cb)
 
 
@@ -44,3 +68,7 @@ scatter!(t, ode_data[2,:], label="data")
 scatter!(t, Flux.data(pred[2,:]), label="prediction")
 
 #savefig("sogood.png")
+
+
+using BSON: @save
+@save "model_l2_1000_epochs.bson" dudt
