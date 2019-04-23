@@ -46,7 +46,7 @@ ps = Flux.params(dudt)
 # Build node
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
 # To set by user
-init_train, number_sets, number_reps, number_epochs_loss1, number_epochs_loss2 = 3000, 8, 1, 60, 20
+init_train, number_sets, number_reps, number_epochs_loss1, number_epochs_loss2 = 5000, 1, 1, 1, 1000
 # For saving
 sa = saver(init_train+number_sets*(number_reps*(number_epochs_loss1+number_epochs_loss2)+init_train))
 # Define collocation loss function with callback
@@ -81,14 +81,14 @@ opt_l2 = ADAM(0.1)
 Flux.train!(collocation_loss_fct, ps, data_iter_init_collocation, opt, cb = cb_collocation)
 for j in 1:number_sets
     # Push in new area
-    for i in 1:number_reps
+    #for i in 1:number_reps
         Flux.train!(l2_loss_fct, ps, data_iter_rep_l2, opt_l2, cb = cb_l2)
         print("sa.count_epochs ", sa.count_epochs)
         print("\n")
-        Flux.train!(collocation_loss_fct, ps, data_iter_rep_collocation, opt, cb = cb_collocation)
-    end
+        #Flux.train!(collocation_loss_fct, ps, data_iter_rep_collocation, opt, cb = cb_collocation)
+    #end
     # Find local minimum
-    Flux.train!(collocation_loss_fct, ps, data_iter_init_collocation, opt, cb = cb_collocation)
+    #Flux.train!(collocation_loss_fct, ps, data_iter_init_collocation, opt, cb = cb_collocation)
 end
 
 # Call n_ode to get first prediction and to show startpoint for training.

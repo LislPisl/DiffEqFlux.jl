@@ -34,7 +34,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct()=loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 169555
+n_epochs = 5000
 data1 = Iterators.repeated((), n_epochs)
 opt1 = ADAM(0.1)
 # Callback function to observe two stage training.
